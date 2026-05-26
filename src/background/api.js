@@ -1,8 +1,8 @@
-const FREE_URL = "https://api-free.deepl.com/v2/translate";
-const PRO_URL  = "https://api.deepl.com/v2/translate";
+const FREE_BASE_URL = "https://api-free.deepl.com";
+const PRO_BASE_URL  = "https://api.deepl.com";
 
-function deeplUrl(apiKey) {
-  return apiKey.endsWith(":fx") ? FREE_URL : PRO_URL;
+function deeplBaseUrl(apiKey) {
+  return apiKey.endsWith(":fx") ? FREE_BASE_URL : PRO_BASE_URL;
 }
 
 /**
@@ -18,7 +18,7 @@ export async function fetchTranslation(text, targetLang, apiKey, sourceLang = "a
     body.source_lang = sourceLang;
   }
 
-  const response = await fetch(deeplUrl(apiKey), {
+  const response = await fetch(`${deeplBaseUrl(apiKey)}/v2/translate`, {
     method: "POST",
     headers: {
       "Authorization": `DeepL-Auth-Key ${apiKey}`,
@@ -40,9 +40,44 @@ export async function fetchTranslation(text, targetLang, apiKey, sourceLang = "a
   };
 }
 
+/**
+ * @param {string} apiKey
+ * @returns {Promise<{ sourceLanguages: Array<{ language: string, name: string }>, targetLanguages: Array<{ language: string, name: string }> }>}
+ */
+export async function fetchTranslationLanguages(apiKey) {
+  const response = await fetch(`${deeplBaseUrl(apiKey)}/v3/languages?resource=translate_text`, {
+    method: "GET",
+    headers: {
+      "Authorization": `DeepL-Auth-Key ${apiKey}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errBody = await response.text();
+    throw new ApiError(response.status, errBody);
+  }
+
+  const languages = await response.json();
+  return {
+    sourceLanguages: languages
+      .filter((language) => language.usable_as_source)
+      .map(toLanguageOption),
+    targetLanguages: languages
+      .filter((language) => language.usable_as_target)
+      .map(toLanguageOption),
+  };
+}
+
 export class ApiError extends Error {
   constructor(status, body) {
     super(`DeepL API error ${status}: ${body}`);
     this.status = status;
   }
+}
+
+function toLanguageOption({ lang, name }) {
+  return {
+    language: lang,
+    name,
+  };
 }

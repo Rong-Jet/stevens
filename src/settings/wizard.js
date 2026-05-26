@@ -1,4 +1,6 @@
-export function initSettingsWizard({ root = document, loadSettings, persistSettings } = {}) {
+import { populateLanguageSelect } from "./language-options.js";
+
+export function initSettingsWizard({ root = document, loadSettings, persistSettings, loadLanguageOptions } = {}) {
   const apiKeyInput = root.querySelector("#popupApiKey");
   const sourceLangSelect = root.querySelector("#popupSourceLang");
   const targetLangSelect = root.querySelector("#popupTargetLang");
@@ -55,13 +57,14 @@ export function initSettingsWizard({ root = document, loadSettings, persistSetti
     return true;
   }
 
-  const ready = loadSettings().then((settings) => {
+  const ready = loadSettings().then(async (settings) => {
     const { apiKey = "", sourceLang = "auto", targetLang = "EN" } = settings;
     apiKeySource = settings.apiKeySource ?? "none";
     visibleSteps = apiKeySource === "env" ? steps.filter((step) => step !== apiKeyStep) : steps;
     apiKeyInput.value = apiKeySource === "env" ? "" : apiKey;
     sourceLangSelect.value = sourceLang;
     targetLangSelect.value = targetLang;
+    await loadLanguages(apiKey, sourceLang, targetLang);
     if (apiKeyHint) {
       apiKeyHint.textContent = apiKeySource === "env"
         ? "API key loaded from local .env."
@@ -73,7 +76,12 @@ export function initSettingsWizard({ root = document, loadSettings, persistSetti
   });
 
   nextButtons.forEach((button) => {
-    button.addEventListener("click", () => showStep(currentStep + 1));
+    button.addEventListener("click", async () => {
+      if (visibleSteps[currentStep] === apiKeyStep) {
+        await loadLanguages(apiKeyInput.value.trim(), sourceLangSelect.value, targetLangSelect.value);
+      }
+      showStep(currentStep + 1);
+    });
   });
   previousButtons.forEach((button) => {
     button.addEventListener("click", () => showStep(currentStep - 1));
@@ -85,4 +93,16 @@ export function initSettingsWizard({ root = document, loadSettings, persistSetti
   });
 
   return { ready, save, showStep };
+
+  async function loadLanguages(apiKey, sourceLang, targetLang) {
+    if (!apiKey || typeof loadLanguageOptions !== "function") return;
+
+    try {
+      const { sourceLanguages, targetLanguages } = await loadLanguageOptions(apiKey);
+      populateLanguageSelect(sourceLangSelect, sourceLanguages, sourceLang, { includeAuto: true });
+      populateLanguageSelect(targetLangSelect, targetLanguages, targetLang);
+    } catch (err) {
+      setStatus("Unable to load DeepL languages.", "err");
+    }
+  }
 }

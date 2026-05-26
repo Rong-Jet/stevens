@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { fetchTranslation, ApiError } from "../../src/background/api.js";
+import { fetchTranslation, fetchTranslationLanguages, ApiError } from "../../src/background/api.js";
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
@@ -49,6 +49,17 @@ describe("fetchTranslation", () => {
     expect(JSON.parse(options.body)).toEqual({ text: ["Hello world"], target_lang: "ES" });
   });
 
+  it("should pass regional target language codes through to DeepL", async () => {
+    mockFetch.mockResolvedValue(makeResponse(200, {
+      translations: [{ text: "Olá", detected_source_language: "EN" }],
+    }));
+
+    await fetchTranslation("Hello", "pt-BR", "k:fx");
+
+    const [, options] = mockFetch.mock.calls[0];
+    expect(JSON.parse(options.body)).toEqual({ text: ["Hello"], target_lang: "pt-BR" });
+  });
+
   it("should send source_lang when source language is specific", async () => {
     mockFetch.mockResolvedValue(makeResponse(200, {
       translations: [{ text: "Hallo", detected_source_language: "EN" }],
@@ -87,5 +98,37 @@ describe("fetchTranslation", () => {
 
     await expect(fetchTranslation("Hello", "EN", "bad-key:fx")).rejects.toThrow(ApiError);
     await expect(fetchTranslation("Hello", "EN", "bad-key:fx")).rejects.toMatchObject({ status: 403 });
+  });
+});
+
+describe("fetchTranslationLanguages", () => {
+  beforeEach(() => mockFetch.mockReset());
+
+  it("should fetch translation languages from DeepL v3", async () => {
+    mockFetch.mockResolvedValue(makeResponse(200, [
+      { lang: "en", name: "English", usable_as_source: true, usable_as_target: false },
+      { lang: "en-US", name: "English (American)", usable_as_source: false, usable_as_target: true },
+      { lang: "pt", name: "Portuguese", usable_as_source: true, usable_as_target: false },
+      { lang: "pt-BR", name: "Portuguese (Brazilian)", usable_as_source: false, usable_as_target: true },
+      { lang: "de", name: "German", usable_as_source: true, usable_as_target: true },
+    ]));
+
+    const result = await fetchTranslationLanguages("k:fx");
+
+    const [url, options] = mockFetch.mock.calls[0];
+    expect(url).toBe("https://api-free.deepl.com/v3/languages?resource=translate_text");
+    expect(options.headers["Authorization"]).toBe("DeepL-Auth-Key k:fx");
+    expect(result).toEqual({
+      sourceLanguages: [
+        { language: "en", name: "English" },
+        { language: "pt", name: "Portuguese" },
+        { language: "de", name: "German" },
+      ],
+      targetLanguages: [
+        { language: "en-US", name: "English (American)" },
+        { language: "pt-BR", name: "Portuguese (Brazilian)" },
+        { language: "de", name: "German" },
+      ],
+    });
   });
 });

@@ -7,9 +7,10 @@ Highlight text on any page, and Stevens shows a small translation bubble. The sp
 ## Features
 
 - Translate highlighted text through DeepL Free or Pro.
-- Configure DeepL API key, source language, and target language.
+- Configure DeepL API key, source language, and target language from DeepL's supported language list.
 - Source language supports auto-detect or a specific language.
 - Pronounce the original highlighted text from the translation bubble.
+- Translate selected text from Chrome's PDF viewer through the right-click context menu when PDF selection events are not exposed to the page.
 - Toolbar popup wizard for quick setup.
 - Full options page for settings.
 
@@ -93,6 +94,8 @@ When `DEEPL_API_KEY` is present in `.env` at build time, the popup wizard skips 
 4. Read the translation in the bubble.
 5. Click the speaker button to pronounce the original highlighted text.
 
+For PDFs opened in Chrome's built-in PDF viewer, normal page selection events may not fire because the viewer owns PDF text selection outside the page DOM. If the bubble does not appear automatically, select text in the PDF, right-click, and choose **Translate with Stevens**.
+
 If you change extension code while Chrome has it loaded, run the build again, reload the extension in `chrome://extensions`, and refresh the page you are testing.
 
 ## Development
@@ -141,6 +144,7 @@ manifest.json     Chrome extension manifest
 Background code follows a layered structure:
 
 - `src/background/api.js` handles external DeepL HTTP calls.
+- `src/background/language-service.js` loads source and target language options from DeepL.
 - `src/background/translation-service.js` owns validation, orchestration, and error mapping.
 - `src/background/storage.js` owns `chrome.storage.local` access.
 
@@ -156,7 +160,7 @@ Settings are stored in `chrome.storage.local`:
 
 - `apiKey`: DeepL API key, only when no local `.env` key was injected at build time.
 - `sourceLang`: source language for translation and speech, or `auto`.
-- `targetLang`: DeepL target language.
+- `targetLang`: DeepL target language. Language options are loaded from DeepL `/v3/languages?resource=translate_text`, so regional variants such as `pt-BR` are available when DeepL exposes them as targets.
 
 DeepL Free API keys ending in `:fx` use `https://api-free.deepl.com`; other keys use `https://api.deepl.com`.
 

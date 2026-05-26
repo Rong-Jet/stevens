@@ -5,8 +5,13 @@ describe("toBCP47", () => {
   it("should map known DeepL codes to BCP-47", () => {
     expect(toBCP47("EN")).toBe("en-US");
     expect(toBCP47("DE")).toBe("de-DE");
+    expect(toBCP47("de")).toBe("de-DE");
     expect(toBCP47("JA")).toBe("ja-JP");
     expect(toBCP47("ZH")).toBe("zh-CN");
+    expect(toBCP47("pt")).toBe("pt-PT");
+    expect(toBCP47("PT-BR")).toBe("pt-BR");
+    expect(toBCP47("pt-BR")).toBe("pt-BR");
+    expect(toBCP47("PT-PT")).toBe("pt-PT");
   });
 
   it("should fall back to en-US for unknown codes", () => {

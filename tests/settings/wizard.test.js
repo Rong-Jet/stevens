@@ -81,4 +81,56 @@ describe("initSettingsWizard", () => {
       targetLang: "ES",
     });
   });
+
+  it("should populate language selectors from DeepL language options when an api key is available", async () => {
+    const wizard = initSettingsWizard({
+      root: document,
+      loadSettings: () => Promise.resolve({
+        apiKey: "env-key:fx",
+        apiKeySource: "env",
+        sourceLang: "pt",
+        targetLang: "pt-BR",
+      }),
+      persistSettings: jest.fn(),
+      loadLanguageOptions: () => Promise.resolve({
+        sourceLanguages: [{ language: "pt", name: "Portuguese" }],
+        targetLanguages: [{ language: "pt-BR", name: "Portuguese (Brazilian)" }],
+      }),
+    });
+
+    await wizard.ready;
+
+    expect(Array.from(document.getElementById("popupSourceLang").options).map((option) => option.value)).toEqual([
+      "auto",
+      "pt",
+    ]);
+    expect(Array.from(document.getElementById("popupTargetLang").options).map((option) => option.value)).toEqual([
+      "pt-BR",
+    ]);
+    expect(document.getElementById("popupSourceLang").value).toBe("pt");
+    expect(document.getElementById("popupTargetLang").value).toBe("pt-BR");
+  });
+
+  it("should load language options with the typed api key before moving to language selection", async () => {
+    const loadLanguageOptions = jest.fn(() => Promise.resolve({
+      sourceLanguages: [{ language: "en", name: "English" }],
+      targetLanguages: [{ language: "pt-BR", name: "Portuguese (Brazilian)" }],
+    }));
+    const wizard = initSettingsWizard({
+      root: document,
+      loadSettings: () => Promise.resolve({ apiKey: "", sourceLang: "auto", targetLang: "EN" }),
+      persistSettings: jest.fn(),
+      loadLanguageOptions,
+    });
+    await wizard.ready;
+
+    document.getElementById("popupApiKey").value = "typed-key:fx";
+    document.querySelector("[data-next-step]").click();
+    await Promise.resolve();
+
+    expect(loadLanguageOptions).toHaveBeenCalledWith("typed-key:fx");
+    expect(Array.from(document.getElementById("popupTargetLang").options).map((option) => option.value)).toEqual([
+      "pt-BR",
+    ]);
+  });
 });

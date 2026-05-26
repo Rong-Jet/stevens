@@ -28,6 +28,12 @@ utils/           → pure helpers with no DOM side effects
 ```
 Components own their state. Styles never contain logic. Utils never touch the DOM.
 
+### Documentation Standards
+
+- Use `docs/templates/implementation-decision.md` for technical limitations, non-obvious design choices, and rejected alternatives.
+- Keep decision docs complete and concise: enough context to guide future implementation, no implementation transcript.
+- Update an existing decision doc when a change revises its trade-offs or invalidates an assumption.
+
 ---
 
 ## Agent Usage Policy (Token Efficiency)
