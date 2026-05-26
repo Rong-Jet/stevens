@@ -74,6 +74,63 @@ label {
   text-transform: uppercase;
 }
 
+.popup-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.popup-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.popup-toggle-control {
+  width: 38px;
+  height: 22px;
+  position: relative;
+  border-radius: 999px;
+  background: var(--surface-2);
+  flex: 0 0 auto;
+  transition: background 0.15s ease;
+}
+
+.popup-toggle-control::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--muted);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.popup-toggle input:checked + .popup-toggle-control {
+  background: rgba(94, 234, 212, 0.28);
+}
+
+.popup-toggle input:checked + .popup-toggle-control::after {
+  transform: translateX(16px);
+  background: var(--accent);
+}
+
+.popup-toggle input:focus-visible + .popup-toggle-control {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.popup-toggle input:disabled + .popup-toggle-control {
+  opacity: 0.45;
+}
+
 input, select {
   width: 100%;
   background: var(--surface);

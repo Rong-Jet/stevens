@@ -17,7 +17,7 @@ Stevens supports PDFs through two fallback paths:
 1. A PDF-only polling path checks for a stable DOM selection when Chrome exposes one.
 2. A right-click context-menu path uses Chrome's `selectionText` fallback when the PDF viewer does not emit usable selection or mouse events.
 
-Context-menu results render at a stable viewport position rather than directly under the highlighted PDF text.
+Context-menu results render at a stable viewport position rather than directly under the highlighted PDF text. In PDF mode, that fallback position sits below the top-center invite toast. The user can move this fallback bubble inside the viewport, and Stevens reuses that position for later fallback translations in the same open PDF tab.
 
 ## Technical Limitations
 
@@ -25,6 +25,7 @@ Context-menu results render at a stable viewport position rather than directly u
 - `window.getSelection()` may remain empty even when PDF text is visibly highlighted.
 - `chrome.contextMenus` can provide selected text, but it does not provide the selected text rectangle.
 - Because Chrome does not expose reliable PDF selection geometry, Stevens cannot reliably place the bubble directly under highlighted PDF text in the built-in PDF viewer.
+- Movable fallback bubble positions are UI-only state and are kept in the content script for the current tab; they are not persisted across reloads, navigation, or browser sessions.
 - Scanned or image-only PDFs remain unsupported unless selectable text is available through the viewer or OCR layer.
 
 ## Alternatives Considered
@@ -39,13 +40,14 @@ Context-menu results render at a stable viewport position rather than directly u
 
 - Normal websites keep the usual under-selection bubble behavior.
 - PDFs get a best-effort automatic path when DOM selection is exposed.
-- PDFs get a reliable user-triggered path through **Translate with Stevens** in the right-click menu.
-- Context-menu PDF results are positioned predictably, not under the highlighted text.
+- PDFs get a reliable user-triggered path through **Translate with Stevens** in the right-click menu after Stevens is enabled for the tab.
+- If Stevens is disabled, the context-menu path shows the invite toast and does not call DeepL.
+- Context-menu PDF results start at a predictable viewport position, can be dragged by a dedicated handle, and stay at the moved position for later fallback results in the same tab.
 
 ## Validation
 
-- `tests/content/selection-translator.test.js` covers PDF-style `selectionchange`, PDF polling, context-menu display, and persistence while polling sees empty selection.
-- `tests/background/context-menu.test.js` covers context-menu creation and background-to-content result messaging.
+- `tests/content/selection-translator.test.js` covers PDF-style `selectionchange`, PDF polling, context-menu display, movable PDF fallback options, per-tab fallback position reuse, disabled-tab gating, and persistence while polling sees empty selection.
+- `tests/background/context-menu.test.js` covers context-menu creation, disabled-tab invite requests, and background-to-content result messaging.
 - `tests/manifest.test.js` covers frame injection and the `contextMenus` permission.
 
 ## Revisit When

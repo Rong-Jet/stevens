@@ -7,6 +7,11 @@ import { initSettingsWizard } from "../../src/settings/wizard.js";
 function renderWizard() {
   document.body.innerHTML = `
     <section data-step="0">
+      <label>
+        <input id="popupTabEnabled" type="checkbox" />
+        Stevens on this tab
+      </label>
+      <p id="popupTabToggleHint"></p>
       <input id="popupApiKey" />
       <p id="popupApiKeyHint"></p>
     </section>
@@ -55,7 +60,7 @@ describe("initSettingsWizard", () => {
     expect(document.getElementById("popupStatus").textContent).toBe("Saved.");
   });
 
-  it("should skip api key step and save only languages when api key comes from env", async () => {
+  it("should keep the first settings step visible and save only languages when api key comes from env", async () => {
     const persistSettings = jest.fn(() => Promise.resolve());
     const wizard = initSettingsWizard({
       root: document,
@@ -72,7 +77,8 @@ describe("initSettingsWizard", () => {
     document.getElementById("popupSourceLang").value = "DE";
     document.getElementById("popupTargetLang").value = "ES";
 
-    expect(document.querySelector('[data-step="0"]').hidden).toBe(true);
+    expect(document.querySelector('[data-step="0"]').hidden).toBe(false);
+    expect(document.getElementById("popupApiKey").value).toBe("");
 
     await wizard.save();
 
@@ -132,5 +138,40 @@ describe("initSettingsWizard", () => {
     expect(Array.from(document.getElementById("popupTargetLang").options).map((option) => option.value)).toEqual([
       "pt-BR",
     ]);
+  });
+
+  it("should show and immediately persist the current tab Stevens toggle", async () => {
+    const persistTabState = jest.fn(() => Promise.resolve({ enabled: true }));
+    const wizard = initSettingsWizard({
+      root: document,
+      loadSettings: () => Promise.resolve({ apiKey: "", sourceLang: "auto", targetLang: "EN" }),
+      persistSettings: jest.fn(),
+      loadTabState: () => Promise.resolve({ available: true, enabled: false }),
+      persistTabState,
+    });
+    await wizard.ready;
+
+    const toggle = document.getElementById("popupTabEnabled");
+    expect(toggle.checked).toBe(false);
+
+    toggle.checked = true;
+    toggle.dispatchEvent(new Event("change"));
+    await Promise.resolve();
+
+    expect(persistTabState).toHaveBeenCalledWith(true);
+    expect(toggle.checked).toBe(true);
+  });
+
+  it("should disable the current tab Stevens toggle when the page is unavailable", async () => {
+    const wizard = initSettingsWizard({
+      root: document,
+      loadSettings: () => Promise.resolve({ apiKey: "", sourceLang: "auto", targetLang: "EN" }),
+      persistSettings: jest.fn(),
+      loadTabState: () => Promise.resolve({ available: false }),
+    });
+    await wizard.ready;
+
+    expect(document.getElementById("popupTabEnabled").disabled).toBe(true);
+    expect(document.getElementById("popupTabToggleHint").textContent).toBe("Unavailable on this page.");
   });
 });

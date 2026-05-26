@@ -24,4 +24,5 @@ Add or update a document when a change is driven by:
 ## Index
 
 - `decisions/pdf-viewer-selection.md`: Chrome PDF viewer selection limitations and the Stevens fallback design.
+- `decisions/tab-local-activation.md`: Off-by-default per-tab activation, invite toast, and popup toggle behavior.
 - `decisions/deepl-language-discovery.md`: DeepL v3 language discovery, regional variants, and source-audio limitations.

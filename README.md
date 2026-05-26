@@ -2,7 +2,7 @@
 
 Stevens is a Chrome Manifest V3 extension for translating selected text with DeepL and pronouncing the original selected text with the browser Web Speech API.
 
-Highlight text on any page, and Stevens shows a small translation bubble. The speaker button pronounces the selected source text. Source language can be auto-detected or set explicitly.
+Invite Stevens on a page, highlight text, and Stevens shows a small translation bubble. The speaker button pronounces the selected source text. Source language can be auto-detected or set explicitly.
 
 ## Features
 
@@ -11,6 +11,7 @@ Highlight text on any page, and Stevens shows a small translation bubble. The sp
 - Source language supports auto-detect or a specific language.
 - Pronounce the original highlighted text from the translation bubble.
 - Translate selected text from Chrome's PDF viewer through the right-click context menu when PDF selection events are not exposed to the page.
+- Keep Stevens off by default for each new tab until the top-center **Invite Stevens?** toast or popup toggle turns it on.
 - Toolbar popup wizard for quick setup.
 - Full options page for settings.
 
@@ -75,7 +76,7 @@ sh scripts/create-env.sh --api-key=your-key-here
 
 The extension reads `.env` at build time. After creating or editing `.env`, run `npm run build`, reload Stevens in `chrome://extensions`, and refresh the page you are testing.
 
-When `DEEPL_API_KEY` is present in `.env` at build time, the popup wizard skips the API key step and only asks for language settings. Without an env key, the wizard asks for an API key and stores it in `chrome.storage.local`. If a browser-stored key already exists, the key field is populated so it can be reviewed or replaced.
+When `DEEPL_API_KEY` is present in `.env` at build time, the popup wizard uses that key and does not store another one from the browser. Without an env key, the wizard asks for an API key and stores it in `chrome.storage.local`. If a browser-stored key already exists, the key field is populated so it can be reviewed or replaced.
 
 ## Load In Chrome
 
@@ -89,12 +90,13 @@ When `DEEPL_API_KEY` is present in `.env` at build time, the popup wizard skips 
 ## Usage
 
 1. Open any webpage.
-2. Highlight text.
-3. Wait for the Stevens bubble to appear.
-4. Read the translation in the bubble.
-5. Click the speaker button to pronounce the original highlighted text.
+2. Click the **Invite Stevens?** toast within 5 seconds, or use the popup toggle to turn Stevens on for the current tab.
+3. Highlight text.
+4. Wait for the Stevens bubble to appear.
+5. Read the translation in the bubble.
+6. Click the speaker button to pronounce the original highlighted text.
 
-For PDFs opened in Chrome's built-in PDF viewer, normal page selection events may not fire because the viewer owns PDF text selection outside the page DOM. If the bubble does not appear automatically, select text in the PDF, right-click, and choose **Translate with Stevens**.
+For PDFs opened in Chrome's built-in PDF viewer, normal page selection events may not fire because the viewer owns PDF text selection outside the page DOM. After Stevens is on for the tab, select text in the PDF, right-click, and choose **Translate with Stevens**. If Stevens is off, the context-menu path shows the invite toast instead of translating. The PDF fallback bubble can be moved with its drag handle, and Stevens keeps that position for later fallback translations in the same tab.
 
 If you change extension code while Chrome has it loaded, run the build again, reload the extension in `chrome://extensions`, and refresh the page you are testing.
 

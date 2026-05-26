@@ -46,7 +46,11 @@ describe("registerContextMenu", () => {
       })
     );
 
-    registerContextMenu({ ...chromeApi, translator });
+    registerContextMenu({
+      ...chromeApi,
+      translator,
+      getTabState: jest.fn(() => Promise.resolve({ enabled: true })),
+    });
     const onClicked = chromeApi.contextMenus.onClicked.addListener.mock.calls[0][0];
 
     await onClicked(
@@ -70,5 +74,34 @@ describe("registerContextMenu", () => {
         },
       },
     });
+  });
+
+  it("should request the invite toast instead of translating when Stevens is off for the tab", async () => {
+    const chromeApi = createChromeApi();
+    const translator = jest.fn();
+    const requestInvite = jest.fn(() => Promise.resolve());
+
+    registerContextMenu({
+      ...chromeApi,
+      translator,
+      getTabState: jest.fn(() => Promise.resolve({ enabled: false })),
+      requestInvite,
+    });
+    const onClicked = chromeApi.contextMenus.onClicked.addListener.mock.calls[0][0];
+
+    await onClicked(
+      {
+        menuItemId: "stevens-translate-selection",
+        selectionText: "muito prazer",
+      },
+      { id: 123 }
+    );
+
+    expect(translator).not.toHaveBeenCalled();
+    expect(requestInvite).toHaveBeenCalledWith(123);
+    expect(chromeApi.tabs.sendMessage).not.toHaveBeenCalledWith(
+      123,
+      expect.objectContaining({ type: MessageType.DISPLAY_TRANSLATION_RESULT })
+    );
   });
 });

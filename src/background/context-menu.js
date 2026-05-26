@@ -8,6 +8,8 @@ export function registerContextMenu({
   contextMenus = globalThis.chrome?.contextMenus,
   tabs = globalThis.chrome?.tabs,
   translator = translate,
+  getTabState = (tabId) => sendTabMessage(tabs, tabId, { type: MessageType.GET_STEVENS_STATE }),
+  requestInvite = (tabId) => sendTabMessage(tabs, tabId, { type: MessageType.SHOW_STEVENS_INVITE }),
 } = {}) {
   if (!runtime?.onInstalled || !contextMenus?.create || !contextMenus?.onClicked || !tabs?.sendMessage) {
     return;
@@ -24,6 +26,12 @@ export function registerContextMenu({
   contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId !== TRANSLATE_SELECTION_MENU_ID) return;
     if (!tab?.id || !info.selectionText?.trim()) return;
+
+    const state = await getTabState(tab.id);
+    if (!state?.enabled) {
+      await requestInvite(tab.id);
+      return;
+    }
 
     try {
       const result = await translator(info.selectionText);
@@ -42,5 +50,13 @@ export function registerContextMenu({
         },
       });
     }
+  });
+}
+
+function sendTabMessage(tabs, tabId, message) {
+  return new Promise((resolve) => {
+    tabs.sendMessage(tabId, message, (response) => {
+      resolve(response?.payload ?? null);
+    });
   });
 }

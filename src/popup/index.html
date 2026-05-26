@@ -18,6 +18,13 @@
     </header>
 
     <section data-step="0" class="popup-step">
+      <label class="popup-toggle">
+        <input id="popupTabEnabled" type="checkbox" />
+        <span class="popup-toggle-control" aria-hidden="true"></span>
+        <span>Stevens on this tab</span>
+      </label>
+      <p id="popupTabToggleHint" class="popup-hint"></p>
+
       <label for="popupApiKey">DeepL API Key</label>
       <input id="popupApiKey" type="password" placeholder="xxxx-xxxx-xxxx-xxxx:fx" autocomplete="off" />
       <p id="popupApiKeyHint" class="popup-hint"></p>

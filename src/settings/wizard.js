@@ -1,6 +1,15 @@
 import { populateLanguageSelect } from "./language-options.js";
 
-export function initSettingsWizard({ root = document, loadSettings, persistSettings, loadLanguageOptions } = {}) {
+export function initSettingsWizard({
+  root = document,
+  loadSettings,
+  persistSettings,
+  loadLanguageOptions,
+  loadTabState,
+  persistTabState,
+} = {}) {
+  const tabEnabledToggle = root.querySelector("#popupTabEnabled");
+  const tabToggleHint = root.querySelector("#popupTabToggleHint");
   const apiKeyInput = root.querySelector("#popupApiKey");
   const sourceLangSelect = root.querySelector("#popupSourceLang");
   const targetLangSelect = root.querySelector("#popupTargetLang");
@@ -60,7 +69,7 @@ export function initSettingsWizard({ root = document, loadSettings, persistSetti
   const ready = loadSettings().then(async (settings) => {
     const { apiKey = "", sourceLang = "auto", targetLang = "EN" } = settings;
     apiKeySource = settings.apiKeySource ?? "none";
-    visibleSteps = apiKeySource === "env" ? steps.filter((step) => step !== apiKeyStep) : steps;
+    visibleSteps = steps;
     apiKeyInput.value = apiKeySource === "env" ? "" : apiKey;
     sourceLangSelect.value = sourceLang;
     targetLangSelect.value = targetLang;
@@ -72,13 +81,44 @@ export function initSettingsWizard({ root = document, loadSettings, persistSetti
           ? "API key saved in browser storage."
           : "";
     }
+    await loadCurrentTabState();
     showStep(0);
+  });
+
+  async function loadCurrentTabState() {
+    if (!tabEnabledToggle || typeof loadTabState !== "function") return;
+
+    const state = await loadTabState();
+    if (!state?.available) {
+      tabEnabledToggle.checked = false;
+      tabEnabledToggle.disabled = true;
+      if (tabToggleHint) tabToggleHint.textContent = "Unavailable on this page.";
+      return;
+    }
+
+    tabEnabledToggle.checked = Boolean(state.enabled);
+    tabEnabledToggle.disabled = false;
+    if (tabToggleHint) tabToggleHint.textContent = "";
+  }
+
+  tabEnabledToggle?.addEventListener("change", async () => {
+    if (typeof persistTabState !== "function") return;
+
+    try {
+      const state = await persistTabState(tabEnabledToggle.checked);
+      tabEnabledToggle.checked = Boolean(state?.enabled);
+      if (tabToggleHint) tabToggleHint.textContent = "";
+    } catch (err) {
+      tabEnabledToggle.checked = false;
+      tabEnabledToggle.disabled = true;
+      if (tabToggleHint) tabToggleHint.textContent = "Unavailable on this page.";
+    }
   });
 
   nextButtons.forEach((button) => {
     button.addEventListener("click", async () => {
       if (visibleSteps[currentStep] === apiKeyStep) {
-        await loadLanguages(apiKeyInput.value.trim(), sourceLangSelect.value, targetLangSelect.value);
+        await loadLanguages(getLanguageApiKey(), sourceLangSelect.value, targetLangSelect.value);
       }
       showStep(currentStep + 1);
     });
@@ -104,5 +144,10 @@ export function initSettingsWizard({ root = document, loadSettings, persistSetti
     } catch (err) {
       setStatus("Unable to load DeepL languages.", "err");
     }
+  }
+
+  function getLanguageApiKey() {
+    if (apiKeySource === "env") return "";
+    return apiKeyInput.value.trim();
   }
 }
