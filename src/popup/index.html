@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stevens</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main class="popup-shell">
+    <header class="popup-header">
+      <h1>Stevens</h1>
+      <div class="popup-steps" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </header>
+
+    <section data-step="0" class="popup-step">
+      <label for="popupApiKey">DeepL API Key</label>
+      <input id="popupApiKey" type="password" placeholder="xxxx-xxxx-xxxx-xxxx:fx" autocomplete="off" />
+      <button type="button" data-next-step>Next</button>
+    </section>
+
+    <section data-step="1" class="popup-step" hidden>
+      <label for="popupSourceLang">Source Language</label>
+      <select id="popupSourceLang">
+        <option value="auto">Auto-detect</option>
+        <option value="EN">English</option>
+        <option value="DE">German</option>
+        <option value="FR">French</option>
+        <option value="ES">Spanish</option>
+        <option value="IT">Italian</option>
+        <option value="JA">Japanese</option>
+        <option value="ZH">Chinese (Simplified)</option>
+        <option value="KO">Korean</option>
+        <option value="PT">Portuguese</option>
+        <option value="RU">Russian</option>
+        <option value="NL">Dutch</option>
+        <option value="PL">Polish</option>
+        <option value="SV">Swedish</option>
+        <option value="TR">Turkish</option>
+      </select>
+      <div class="popup-actions">
+        <button type="button" class="secondary" data-previous-step>Back</button>
+        <button type="button" data-next-step>Next</button>
+      </div>
+    </section>
+
+    <section data-step="2" class="popup-step" hidden>
+      <label for="popupTargetLang">Target Language</label>
+      <select id="popupTargetLang">
+        <option value="EN">English</option>
+        <option value="DE">German</option>
+        <option value="FR">French</option>
+        <option value="ES">Spanish</option>
+        <option value="IT">Italian</option>
+        <option value="JA">Japanese</option>
+        <option value="ZH">Chinese (Simplified)</option>
+        <option value="KO">Korean</option>
+        <option value="PT">Portuguese</option>
+        <option value="RU">Russian</option>
+        <option value="NL">Dutch</option>
+        <option value="PL">Polish</option>
+        <option value="SV">Swedish</option>
+        <option value="TR">Turkish</option>
+      </select>
+      <div class="popup-actions">
+        <button type="button" class="secondary" data-previous-step>Back</button>
+        <button type="button" data-save-settings>Save</button>
+      </div>
+    </section>
+
+    <p id="popupStatus" class="popup-status" aria-live="polite"></p>
+  </main>
+  <script src="../../dist/popup.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+/* === Tokens === */
+:root {
+  --stevens-bg: #1e1e2e;
+  --stevens-surface: #2a2a3d;
+  --stevens-text: #cdd6f4;
+  --stevens-muted: #888aac;
+  --stevens-accent: #89b4fa;
+  --stevens-error: #f38ba8;
+  --stevens-radius: 10px;
+  --stevens-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+  --stevens-font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --stevens-z: 2147483647;
+}
+
+/* === Bubble container === */
+.stevens-bubble {
+  position: absolute;
+  z-index: var(--stevens-z);
+  background: var(--stevens-bg);
+  color: var(--stevens-text);
+  font-family: var(--stevens-font);
+  font-size: 14px;
+  line-height: 1.5;
+  border-radius: var(--stevens-radius);
+  box-shadow: var(--stevens-shadow);
+  padding: 10px 14px;
+  max-width: 320px;
+  min-width: 120px;
+  pointer-events: auto;
+  animation: stevens-fade-in 0.15s ease;
+}
+
+.stevens-hidden {
+  display: none;
+}
+
+/* === Content === */
+.stevens-translation {
+  margin-bottom: 6px;
+}
+
+.stevens-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stevens-lang {
+  font-size: 11px;
+  color: var(--stevens-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stevens-loading {
+  color: var(--stevens-muted);
+  font-style: italic;
+}
+
+.stevens-error {
+  color: var(--stevens-error);
+  font-size: 13px;
+}
+
+/* === Speak button === */
+.stevens-speak-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 16px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: background 0.1s;
+  color: var(--stevens-accent);
+}
+
+.stevens-speak-btn:hover {
+  background: var(--stevens-surface);
+}
+
+/* === Animation === */
+@keyframes stevens-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
