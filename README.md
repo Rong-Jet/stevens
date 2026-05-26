@@ -36,6 +36,46 @@ npm run build
 
 This creates the bundled scripts in `dist/`. The `dist/` directory is generated and ignored by Git, so build locally before loading the extension.
 
+## Local Environment File
+
+`.env` is optional and intended for local developer convenience. The Chrome extension cannot write files into this repo or execute shell scripts from the popup because extension pages run inside Chrome's browser sandbox.
+
+Only the DeepL API key belongs in `.env`. Source and target languages are browser-side settings managed by the popup wizard or options page.
+
+To create `.env` manually, copy the example:
+
+```sh
+cp .env.example .env
+```
+
+Then edit `.env`:
+
+```text
+DEEPL_API_KEY=your-key-here
+```
+
+To create `.env` from `.env.example` with the setup script:
+
+```sh
+npm run env:setup
+```
+
+Or pass values non-interactively:
+
+```sh
+npm run env:setup -- --api-key=your-key-here
+```
+
+The shell wrapper is also available:
+
+```sh
+sh scripts/create-env.sh --api-key=your-key-here
+```
+
+The extension reads `.env` at build time. After creating or editing `.env`, run `npm run build`, reload Stevens in `chrome://extensions`, and refresh the page you are testing.
+
+When `DEEPL_API_KEY` is present in `.env` at build time, the popup wizard skips the API key step and only asks for language settings. Without an env key, the wizard asks for an API key and stores it in `chrome.storage.local`. If a browser-stored key already exists, the key field is populated so it can be reviewed or replaced.
+
 ## Load In Chrome
 
 1. Open `chrome://extensions`.
@@ -84,6 +124,7 @@ npm run test:watch
 ## Project Structure
 
 ```text
+scripts/          Local development helper scripts
 src/background/   Background service worker, DeepL API layer, settings storage
 src/content/      Content script, selection handling, translation bubble UI
 src/messages/     Message type constants and payload typedefs
@@ -113,11 +154,15 @@ Content scripts are UI-only:
 
 Settings are stored in `chrome.storage.local`:
 
-- `apiKey`: DeepL API key.
+- `apiKey`: DeepL API key, only when no local `.env` key was injected at build time.
 - `sourceLang`: source language for translation and speech, or `auto`.
 - `targetLang`: DeepL target language.
 
 DeepL Free API keys ending in `:fx` use `https://api-free.deepl.com`; other keys use `https://api.deepl.com`.
+
+Local `.env` files use this variable:
+
+- `DEEPL_API_KEY`
 
 ## Git Hygiene
 

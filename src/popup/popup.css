@@ -125,5 +125,11 @@ button.secondary {
   text-align: center;
 }
 
+.popup-hint {
+  color: var(--muted);
+  font-size: 12px;
+  min-height: 16px;
+}
+
 .popup-status.ok { color: var(--success); }
 .popup-status.err { color: var(--error); }

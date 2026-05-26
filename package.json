@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "node build.js",
+    "env:setup": "node scripts/create-env.js",
     "watch": "node build.js --watch",
     "test": "node --experimental-vm-modules node_modules/.bin/jest --coverage",
     "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch"

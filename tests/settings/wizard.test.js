@@ -6,10 +6,12 @@ import { initSettingsWizard } from "../../src/settings/wizard.js";
 
 function renderWizard() {
   document.body.innerHTML = `
-    <section data-step="0"></section>
+    <section data-step="0">
+      <input id="popupApiKey" />
+      <p id="popupApiKeyHint"></p>
+    </section>
     <section data-step="1" hidden></section>
     <section data-step="2" hidden></section>
-    <input id="popupApiKey" />
     <select id="popupSourceLang">
       <option value="auto">Auto-detect</option>
       <option value="DE">German</option>
@@ -51,5 +53,32 @@ describe("initSettingsWizard", () => {
       targetLang: "ES",
     });
     expect(document.getElementById("popupStatus").textContent).toBe("Saved.");
+  });
+
+  it("should skip api key step and save only languages when api key comes from env", async () => {
+    const persistSettings = jest.fn(() => Promise.resolve());
+    const wizard = initSettingsWizard({
+      root: document,
+      loadSettings: () => Promise.resolve({
+        apiKey: "env-key:fx",
+        apiKeySource: "env",
+        sourceLang: "auto",
+        targetLang: "EN",
+      }),
+      persistSettings,
+    });
+    await wizard.ready;
+
+    document.getElementById("popupSourceLang").value = "DE";
+    document.getElementById("popupTargetLang").value = "ES";
+
+    expect(document.querySelector('[data-step="0"]').hidden).toBe(true);
+
+    await wizard.save();
+
+    expect(persistSettings).toHaveBeenCalledWith({
+      sourceLang: "DE",
+      targetLang: "ES",
+    });
   });
 });
